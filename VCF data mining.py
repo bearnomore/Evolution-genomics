@@ -55,7 +55,7 @@ dict_mutants_to_wt = dict(zip(mutant_names, mutants_to_wt))
 dict_mutants_to_wt
 
 
-# In[141]:
+# In[144]:
 
 
 # find locus tag with mutations of variant freq > 0.5
@@ -68,5 +68,8 @@ variant_freq = 0.5
 mutation_genes = {}
 for name in mutant_names:
     mutation_genes[name] = find_locus(dict_mutants_to_wt, variant_freq, name)
-mutation_genes
+#mutation_genes
+
+df = pd.DataFrame.from_dict(mutation_genes, orient="index")
+df.to_csv("G:\\Ye\\Evolution mutants\\mutation_genes.csv")
 
