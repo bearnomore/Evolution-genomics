@@ -50,7 +50,7 @@ def clean_WT(wt_vcf, vf_threshold):
     return wt_vcf_new
 
 
-# In[281]:
+# In[294]:
 
 
 def compare_to_wt(wt_vcf_new, mutant_vcf):
@@ -72,15 +72,15 @@ def compare_to_wt(wt_vcf_new, mutant_vcf):
                     'Polymorphism Type_x', 'Protein Effect_x', 'Variant Frequency_x',
                     'Amino Acid Change_x', 'Codon Change_x', 'note_x', 'Variant Frequency_y']]
     common.rename(index=str, columns={'locus_tag_x':'locus_tag',"Polymorphism Type_x": "Polymorphism Type", "Protein Effect_x": "Protein Effect",
-                                     'Variant Frequency_x': 'Variant Frequency', 'Amino Acid Change_x': 'Amino Acid Change',
-                                     'Codon Change_x': 'Codon Change', 'note_x': 'note'}, inplace = True)
+                                     'Variant Frequency_x': 'Variant Frequency WT', 'Amino Acid Change_x': 'Amino Acid Change',
+                                     'Codon Change_x': 'Codon Change', 'note_x': 'note', 'Variant Frequency_y': 'Variant Frequency Mutant'}, inplace = True)
     common['locus_tag'].fillna('intergenetic region', inplace = True)
     common.set_index('locus_tag', inplace = True)
     
     return common, mutant_to_wt
 
 
-# In[282]:
+# In[295]:
 
 
 files = glob.glob('G:\Dropbox (Vetsigian lab)\Vetsigian lab Team Folder\Ye\Genomics\M145 Evolved mutants\*.csv')
@@ -104,12 +104,25 @@ for name in mutant_names:
     dict_mutants_to_wt[name] = {}
     dict_mutants_to_wt[name]['common'] = common
     dict_mutants_to_wt[name]['variance'] = variance
+wt_new['locus_tag'].fillna('intergenetic region', inplace = True)
+wt_new.set_index('locus_tag', inplace = True)
 
 
-# In[283]:
+# In[296]:
 
 
 dict_mutants_to_wt['R1']
+
+
+# In[298]:
+
+
+# Compare variance frequencies of mutatations shared by wt and mutants ('the common data set and wt data set')
+common_vf_comp = {}
+for mutant in mutant_names:
+    common_vf_comp[mutant] = dict_mutants_to_wt[mutant]['common'][['Variant Frequency WT', 'Variant Frequency Mutant']]
+    
+common_vf_comp
 
 
 # In[144]:
