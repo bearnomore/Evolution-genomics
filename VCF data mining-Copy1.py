@@ -1,13 +1,14 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[138]:
 
 
 import pandas as pd
 import numpy as np
 import glob
 import matplotlib as mp
+from functools import reduce
 
 
 # In[2]:
@@ -127,13 +128,13 @@ wt_new['locus_tag'].fillna('intergenetic region', inplace = True)
 wt_new.set_index('locus_tag', inplace = True)
 
 
-# In[7]:
+# In[150]:
 
 
-dict_mutants_to_wt['R1']['variance']
+dict_mutants_to_wt['W3']['variance']
 
 
-# In[8]:
+# In[58]:
 
 
 # Compare variance frequencies of mutatations shared by wt and mutants ('the common data set and wt data set')
@@ -144,12 +145,12 @@ for mutant in mutant_names:
 
 common_var_df = dict_mutants_to_wt['R1']['common']
 lab1 = common_var_df.index.values
-lab2 = common_var_df['Change']
+lab2 = common_var_df['Codon Change']
 lab_list = list(zip(lab1, lab2))
 tuple(map(lambda tup: tup[0] + ',' + tup[1], lab_list))
 
 
-# In[9]:
+# In[62]:
 
 
 # Build a bar plot to see the common variance change from wt to each mutant
@@ -170,17 +171,17 @@ def barplot_common_variance(dict_mutants_to_wt, mutant_name, bar_width, opacity,
     ax.set_title('Frequency of Common Variance shared by WT and ' + mutant_name)
     ax.set_xticks(index + bar_width / 2)
     xticklab1 = common_var_df.index.values 
-    xticklab2 = common_var_df['Change']
+    xticklab2 = common_var_df['Codon Change']
     lab_list = list(zip(xticklab1, xticklab2))
-    xticklab = tuple(map(lambda tup: tup[0] + ',' + tup[1], lab_list))    
+    xticklab = tuple(map(lambda tup: str(tup[0]) + ',' + str(tup[1]), lab_list))    
     ax.set_xticklabels(xticklab, rotation = xtick_rot)
     ax.legend()
     plt.show()
 
-barplot_common_variance(dict_mutants_to_wt, 'R2', 0.2, 0.6, 90)   
+barplot_common_variance(dict_mutants_to_wt, 'WS1', 0.2, 0.6, 90)   
 
 
-# In[30]:
+# In[87]:
 
 
 # Barplot the variant frequency by mutant group: R (R1 to R5), RH (RH1 to RH5), W(W1 to W5), WS(WS1 and WS2)
@@ -192,14 +193,14 @@ for key in dict_mutants_to_wt.keys():
     if group_name in mutant_group.keys():
         mutant_group[group_name]. append(key)
 
-mutant_names = mutant_group['RH']  
+mutant_names = mutant_group['WS']  
 for mut in mutant_names:
     barplot_common_variance(dict_mutants_to_wt, mut, 0.2, 0.6, 90)
 
 mutant_group
 
 
-# In[11]:
+# In[152]:
 
 
 # Investigate variants novel in mutants 
@@ -210,7 +211,7 @@ def find_locus(dict_mutants_to_wt, variant_freq, mutant_name):
     output = dataframe of novel mutations only found in the mutants with variant freq > threshold
     '''
     mutant2wt = dict_mutants_to_wt[mutant_name]['variance']
-    return mutant2wt[mutant2wt['Variant Frequency'] > variant_freq][['Change', 'note', 'Variant Frequency']]
+    return mutant2wt[mutant2wt['Variant Frequency'] > variant_freq][['Codon Change', 'Polymorphism Type', 'note', 'Variant Frequency']]
 
 def find_locus4all_mutants(dict_mutants_to_wt, variant_freq):
     '''
@@ -225,9 +226,10 @@ def find_locus4all_mutants(dict_mutants_to_wt, variant_freq):
 novel_mut_all = find_locus4all_mutants(dict_mutants_to_wt, 0)
 #df = pd.DataFrame.from_dict(mutation_genes, orient="index")
 #df.to_csv("G:\\Ye\\Evolution mutants\\mutation_genes.csv")
+novel_mut_all['W3']
 
 
-# In[87]:
+# In[154]:
 
 
 # Exclude the mutation locus in intergenetic region and SCO3798
@@ -262,10 +264,10 @@ def find_mut_in_genes4all_mutants(novel_mut_all, exclude1 = True, exclude2 = Tru
     return dict_mut_exclude12
 
 exclusive_mut_in_mutants = find_mut_in_genes4all_mutants(novel_mut_all, exclude1 = True, exclude2 = True)
-exclusive_mut_in_mutants['R1']
+exclusive_mut_in_mutants['W3']
 
 
-# In[13]:
+# In[157]:
 
 
 
@@ -277,33 +279,35 @@ def barplot_mut_var_freq(exclusive_mut_in_mutants, mutant_name, bar_width, opaci
     rects1 = ax.bar(index, vf, bar_width,
                 alpha=opacity, color='r', label= mutant_name, align = 'edge')
     ax.set_ylabel('Variant Frequency')
-    ax.set_title('Frequency of Common Variance shared by WT and ' + mutant_name)
+    ax.set_title('Frequency of Exclusive Variance in ' + mutant_name)
     ax.set_xticks(index + bar_width / 2)
     xticklab1 = exclusive_mut_in_mutants[mutant_name].index.values 
-    xticklab2 = exclusive_mut_in_mutants[mutant_name]['Change']
-    lab_list = list(zip(xticklab1, xticklab2))
-    xticklab = tuple(map(lambda tup: tup[0] + ',' + tup[1], lab_list))    
+    xticklab2 = exclusive_mut_in_mutants[mutant_name]['Codon Change']
+    xticklab3 = exclusive_mut_in_mutants[mutant_name]['Polymorphism Type']
+    lab_list = list(zip(xticklab1, xticklab2, xticklab3))
+    xticklab = tuple(map(lambda tup: str(tup[0]) + ',' + str(tup[1]) + ',' + str(tup[2])[0:3], lab_list))    
     ax.set_xticklabels(xticklab, rotation = xtick_rot)
     ax.legend()
     plt.show()
     
-barplot_mut_var_freq(exclusive_mut_in_mutants, 'R1', 0.4, 0.6, 90)
+barplot_mut_var_freq(exclusive_mut_in_mutants, 'WS1', 0.4, 0.6, 90)
 
 
-# In[88]:
+# In[158]:
 
 
 mut_in_group = []
 for mut_name in mutant_group['R']:
     lab1 = exclusive_mut_in_mutants[mut_name].index.values
-    lab2 = exclusive_mut_in_mutants[mut_name]['Change']
-    lab = list(zip(lab1, lab2))
-    mut_in_group.extend(tuple(map(lambda tup: tup[0] + ',' + tup[1], lab)))
+    lab2 = exclusive_mut_in_mutants[mut_name]['Codon Change']
+    lab3 = exclusive_mut_in_mutants[mut_name]['Polymorphism Type']
+    lab = list(zip(lab1, lab2, lab3))
+    mut_in_group.extend(tuple(map(lambda tup: str(tup[0]) + ',' + str(tup[1]) + ',' + str(tup[2])[0:3], lab)))
     lab = []
 set(mut_in_group)
 
 
-# In[98]:
+# In[160]:
 
 
 # find all non-redundant mutations in each group
@@ -312,17 +316,18 @@ def find_non_redund_mut_by_group(exclusive_mut_in_mutants, mutant_group, group_n
     mut_in_group = []
     for mut_name in mutant_group[group_name]:
         lab1 = exclusive_mut_in_mutants[mut_name].index.values
-        lab2 = exclusive_mut_in_mutants[mut_name]['Change']
-        lab = list(zip(lab1, lab2))
-        mut_in_group.extend(tuple(map(lambda tup: tup[0] + ',' + tup[1], lab)))
+        lab2 = exclusive_mut_in_mutants[mut_name]['Codon Change']
+        lab3 = exclusive_mut_in_mutants[mut_name]['Polymorphism Type']
+        lab = list(zip(lab1, lab2, lab3))
+        mut_in_group.extend(tuple(map(lambda tup: str(tup[0]) + ',' + str(tup[1]) + ',' + str(tup[2])[0:3], lab)))
         lab = [] # set this to empty or multiple run will cause replicated labs
     return set(mut_in_group)
 
-all_labs = find_non_redund_mut_by_group(exclusive_mut_in_mutants, mutant_group, 'R')
-len(all_labs)
+all_labs = find_non_redund_mut_by_group(exclusive_mut_in_mutants, mutant_group, 'WS')
+all_labs
 
 
-# In[91]:
+# In[165]:
 
 
 # Merge index (locus_tag) and Change cols in df of exclusive_mut_in_mutants by group
@@ -330,39 +335,39 @@ len(all_labs)
 def rearrange_cols_mut(exclusive_mut_in_mutants, mutant_name):
     df = exclusive_mut_in_mutants[mutant_name]
     genes = df.index.values
-    changes = df['Change']        
-    lab = list(zip(genes, changes))
-    labs = tuple(map(lambda tup: tup[0] + ',' + tup[1], lab))
+    changes = df['Codon Change'] 
+    pol = df['Polymorphism Type']
+    lab = list(zip(genes, changes, pol))
+    labs = tuple(map(lambda tup: str(tup[0]) + ',' + str(tup[1]) + ',' + str(tup[2])[0:3], lab))
     df['labels'] = labs
-    df = df.set_index('labels').drop('Change', axis = 1)
+    df = df.set_index('labels').drop(['Codon Change', 'Polymorphism Type'], axis = 1)
     return df
 
-df = rearrange_cols_mut(exclusive_mut_in_mutants, 'R1')
-df
+rearrange_cols_mut(exclusive_mut_in_mutants, 'W3')
 
 
-# In[101]:
+# In[167]:
 
 
 def mut_locus_freq_by_group(exclusive_mut_in_mutants, mutant_group, group_name):
     all_labs = find_non_redund_mut_by_group(exclusive_mut_in_mutants, mutant_group, group_name)
-    #mut_locus_freq = dict((el,[]) for el in all_labs)
     mutant_names = mutant_group[group_name]
     mut_locus_freq = pd.DataFrame(index = all_labs, columns = mutant_names)
+    mut_locus_freq['note'] = ''
     for mut_name in mutant_names:
         df = rearrange_cols_mut(exclusive_mut_in_mutants, mut_name)
         for lab in all_labs:
             if lab in df.index.values:
                 mut_locus_freq.loc[lab][mut_name] = df.loc[lab]['Variant Frequency']
+                mut_locus_freq.loc[lab]['note'] = df.loc[lab]['note']
             else:
                 mut_locus_freq.loc[lab][mut_name] = 0
     return mut_locus_freq
 
-df = mut_locus_freq_by_group(exclusive_mut_in_mutants, mutant_group, 'R')
-df
+mut_locus_freq_by_group(exclusive_mut_in_mutants, mutant_group, 'W')
 
 
-# In[155]:
+# In[100]:
 
 
 def barplot_mut_vf_by_group(exclusive_mut_in_mutants, mutant_group, group_name, bar_width, opacity, xtick_rotate = 90):
@@ -374,9 +379,9 @@ def barplot_mut_vf_by_group(exclusive_mut_in_mutants, mutant_group, group_name, 
     return ax
 
 
-# In[159]:
+# In[101]:
 
 
 
-barplot_mut_vf_by_group(exclusive_mut_in_mutants, mutant_group, 'RH', 0.3, 0.2, 90)
+barplot_mut_vf_by_group(exclusive_mut_in_mutants, mutant_group, 'WS', 0.3, 0.2, 90)
 
